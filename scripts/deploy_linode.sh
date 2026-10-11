@@ -62,7 +62,7 @@ if [[ -n $id && -n $(get_env DATABASE_URL) ]]; then
 fi
 
 # 4. Copy the code and .env, then build and start the agent and Valkey. The build log stays on the Linode.
-scp "${ssh_opts[@]}" -q -r agent docs Dockerfile compose.yaml .dockerignore .env "root@$ip:/opt/hackmidwest/"
+scp "${ssh_opts[@]}" -q -r app agent docs Dockerfile compose.yaml .dockerignore .env "root@$ip:/opt/hackmidwest/"
 echo "$(elapsed): code and .env copied. Building and starting the containers."
 ssh "${ssh_opts[@]}" "root@$ip" "cd /opt/hackmidwest && { docker compose up -d --build > deploy.log 2>&1 || { tail -n 30 deploy.log; exit 1; }; }"
 

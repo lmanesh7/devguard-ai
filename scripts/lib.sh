@@ -5,7 +5,11 @@
 
 REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$REPO" || exit 1
-export PATH="$REPO/.venv/bin:$PATH"  # linode-cli and python from the repository's virtual environment
+export PATH="$REPO/.venv/bin:$REPO/.venv/Scripts:$PATH"
+if [[ -n ${USERPROFILE:-} ]]; then
+  py_scripts=$(cygpath -u "$USERPROFILE/AppData/Local/Programs/Python/Python311/Scripts" 2>/dev/null)
+  [[ -d "$py_scripts" ]] && export PATH="$py_scripts:$PATH"
+fi
 
 REGION=us-sea
 CLUSTER=us-sea-1  # the Object Storage cluster in Seattle
@@ -21,7 +25,15 @@ LINODE_IMAGE=linode/ubuntu24.04
 LKE_LABEL=hackmidwest-lke
 NB_LABEL=hackmidwest-nb
 KUBECONFIG_FILE=hackmidwest-kubeconfig.yaml  # a credential for the cluster; .gitignore keeps it out of git
-SSH_KEY=${SSH_KEY:-$HOME/.ssh/id_ed25519}
+if [[ -z ${SSH_KEY:-} ]]; then
+  if [[ -f "$HOME/.ssh/id_ed25519.pub" ]]; then
+    SSH_KEY="$HOME/.ssh/id_ed25519"
+  elif [[ -n ${USERPROFILE:-} && -f "$(cygpath -u "$USERPROFILE" 2>/dev/null)/.ssh/id_ed25519.pub" ]]; then
+    SSH_KEY="$(cygpath -u "$USERPROFILE" 2>/dev/null)/.ssh/id_ed25519"
+  else
+    SSH_KEY="$HOME/.ssh/id_ed25519"
+  fi
+fi
 
 if [[ ! -f .env ]]; then
   echo "No .env file. Run: cp .env.example .env"

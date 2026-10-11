@@ -1,18 +1,26 @@
-# The body: the agent and Valkey, side by side on one machine.
-#   docker compose up -d --build    start both, rebuilding the agent from this folder
-#   docker compose logs -f agent    watch the agent's status lines and requests
+# DevGuard AI & Valkey: side by side on one machine.
+#   docker compose up -d --build    start both, rebuilding DevGuard from this folder
+#   docker compose logs -f agent    watch DevGuard status lines, webhooks, and events
 services:
   agent:
     build: .
+    container_name: devguard-ai
     ports:
       - "8000:8000"
     env_file: .env
     environment:
-      VALKEY_URL: redis://valkey:6379/0  # the valkey service below; this wins over .env
+      VALKEY_HOST: valkey
+      VALKEY_URL: redis://valkey:6379/0
+      INFERENCE_ENDPOINT: ${INFERENCE_ENDPOINT:-https://ws.akamai-workshops.com/v1/chat/completions}
+      INFERENCE_API_KEY: ${INFERENCE_API_KEY:-}
+      LINODE_TOKEN: ${LINODE_TOKEN:-mock_linode}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-mock_github}
+      MOCK_MODE: ${MOCK_MODE:-True}
     depends_on:
       - valkey
     restart: unless-stopped
 
   valkey:
-    image: valkey/valkey:8  # no ports line, so only the agent can reach it
+    image: valkey/valkey:8
+    container_name: devguard-valkey
     restart: unless-stopped

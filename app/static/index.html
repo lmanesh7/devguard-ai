@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevGuard AI — Autonomous AppSec & Linode Cloud Defense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --bg-card: #121826;
+      --bg-card-hover: #172033;
+      --border: #23304a;
+      --text-main: #f0f4fc;
+      --text-muted: #8b9bb4;
+      --akamai-blue: #0099ff;
+      --akamai-orange: #ff7700;
+      --danger: #ff3366;
+      --warning: #ffb800;
+      --success: #00e676;
+      --mono-font: 'JetBrains Mono', monospace;
+      --sans-font: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--sans-font);
+      line-height: 1.5;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--akamai-blue), var(--akamai-orange));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px rgba(0, 153, 255, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+    }
+
+    .badge-live {
+      background: rgba(0, 230, 118, 0.1);
+      color: var(--success);
+      border-color: rgba(0, 230, 118, 0.3);
+    }
+
+    .badge-live::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .badge-shield {
+      background: rgba(0, 153, 255, 0.1);
+      color: var(--akamai-blue);
+      border-color: rgba(0, 153, 255, 0.3);
+    }
+
+    /* GRID LAYOUT */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.2fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      border-color: var(--akamai-blue);
+      transform: translateY(-2px);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: var(--mono-font);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* CODE & DIFF BOX */
+    textarea {
+      width: 100%;
+      height: 180px;
+      background: #060911;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #7ee787;
+      font-family: var(--mono-font);
+      font-size: 13px;
+      padding: 14px;
+      resize: vertical;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--akamai-blue);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: var(--sans-font);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--akamai-blue), #0077cc);
+      color: white;
+      box-shadow: 0 4px 14px rgba(0, 153, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(0, 153, 255, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--akamai-blue);
+    }
+
+    /* TERMINAL LOGS */
+    .terminal-window {
+      background: #060911;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      height: 480px;
+      overflow-y: auto;
+      font-family: var(--mono-font);
+      font-size: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .log-entry {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-left: 3px solid var(--akamai-blue);
+      background: rgba(18, 24, 38, 0.7);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-time {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .log-event {
+      color: var(--akamai-blue);
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .log-critical {
+      border-left-color: var(--danger);
+      background: rgba(255, 51, 102, 0.1);
+    }
+
+    .log-firewall {
+      border-left-color: var(--akamai-orange);
+      background: rgba(255, 119, 0, 0.1);
+    }
+
+    .log-success {
+      border-left-color: var(--success);
+    }
+
+    /* RESULT CARD */
+    .audit-result {
+      margin-top: 20px;
+      padding: 16px;
+      background: #0d1321;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: none;
+    }
+
+    .risk-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .risk-CRITICAL { background: rgba(255, 51, 102, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .risk-HIGH { background: rgba(255, 119, 0, 0.2); color: var(--akamai-orange); border: 1px solid var(--akamai-orange); }
+    .risk-MEDIUM { background: rgba(255, 184, 0, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+    .risk-LOW { background: rgba(0, 230, 118, 0.2); color: var(--success); border: 1px solid var(--success); }
+
+    .firewall-alert {
+      background: rgba(0, 153, 255, 0.15);
+      border: 1px solid var(--akamai-blue);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    pre.diff-box {
+      background: #05080e;
+      border: 1px solid #1c2638;
+      border-radius: 6px;
+      padding: 12px;
+      color: #9cdcfe;
+      font-family: var(--mono-font);
+      font-size: 12px;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-text">
+          <h1>DevGuard AI <span style="font-size:12px; font-weight:600; color:var(--akamai-blue); border:1px solid var(--akamai-blue); padding:2px 8px; border-radius:12px;">Akamai Hack Midwest</span></h1>
+          <p>Real-Time PR Security Auditor & Autonomous Linode Cloud Firewall Shield</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="badge badge-shield">Akamai Inference: Ready</span>
+        <span class="badge badge-shield" id="fwStatusBadge">Cloud Firewall: Active</span>
+        <span class="badge badge-live" id="wsStatus">WebSocket Connected</span>
+      </div>
+    </header>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">PRs Audited</div>
+        <div class="stat-value" id="statAudits">1</div>
+        <div class="stat-sub">Real-time webhook analysis</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Threats Blocked</div>
+        <div class="stat-value" style="color:var(--danger)" id="statThreats">1</div>
+        <div class="stat-sub">Exposed ports & injection vectors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Firewalls Provisioned</div>
+        <div class="stat-value" style="color:var(--akamai-blue)" id="statFirewalls">1</div>
+        <div class="stat-sub">Zero-Trust Linode v4 Shields</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Default Policy</div>
+        <div class="stat-value" style="color:var(--success)">DROP</div>
+        <div class="stat-sub">Only TCP 443 HTTPS allowed</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="dashboard-grid">
+      <!-- LEFT: INTERACTIVE AUDIT WORKSPACE -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>⚡ Interactive Pull Request Diff Auditor</span>
+            <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">Simulate GitHub Webhook or Direct Scan</span>
+          </div>
+
+          <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px;">Pull Request Unified Diff</label>
+          <textarea id="diffInput" placeholder="Paste unified git diff here...">diff --git a/compose.yaml b/compose.yaml
+--- a/compose.yaml
++++ b/compose.yaml
+@@ -5,2 +5,4 @@ services:
+   agent:
++    ports:
++      - "0.0.0.0:22:22"
++    linode_id = 12345
+diff --git a/agent/brain.py b/agent/brain.py
++    system_prompt = f"System: {user_input}"</textarea>
+
+          <div class="btn-group">
+            <button class="btn-primary" id="btnAudit" onclick="runDirectAudit()">🚀 Run Security Audit</button>
+            <button class="btn-secondary" onclick="loadVulnerablePR()">🚨 Load Vulnerable PR</button>
+            <button class="btn-secondary" onclick="loadCleanPR()">✅ Load Clean PR</button>
+            <button class="btn-secondary" onclick="clearDiff()">Clear</button>
+          </div>
+
+          <!-- AUDIT RESULT CONTAINER -->
+          <div class="audit-result" id="auditResult">
+            <div class="risk-banner" id="riskBanner">
+              <span id="riskScoreText">RISK: CRITICAL</span>
+              <span id="threatCountText">2 Vulnerabilities Detected</span>
+            </div>
+
+            <div style="font-size:13px; margin-bottom:12px;" id="summaryText"></div>
+
+            <div id="vulnerabilitiesContainer" style="font-size:12px; margin-bottom:14px;"></div>
+
+            <div class="firewall-alert" id="firewallAlert" style="display:none;">
+              <span style="font-size:24px;">🛡️</span>
+              <div>
+                <strong style="color:var(--akamai-blue)">Active Defense Action Triggered!</strong>
+                <div style="font-size:12px; color:var(--text-muted);" id="firewallAlertDetails"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:14px;">
+              <strong style="font-size:13px;">Suggested Unified Diff Remediation:</strong>
+              <pre class="diff-box" id="remediationDiff"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: LIVE WEBSOCKET EVENT STREAM -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>📡 Real-Time Security Event Stream</span>
+            <span class="badge badge-live">Live</span>
+          </div>
+          <div class="terminal-window" id="eventTerminal">
+            <div class="log-entry log-success">
+              <span class="log-time">system:</span>
+              <span class="log-event">INITIALIZED</span>
+              DevGuard AI Live Event Observer online. Listening for PR webhooks.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws;
+    let auditsCount = 0;
+    let threatsCount = 0;
+    let firewallsCount = 0;
+
+    function initWebSocket() {
+      const loc = window.location;
+      const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${proto}//${loc.host}/ws`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        const badge = document.getElementById('wsStatus');
+        badge.className = 'badge badge-live';
+        badge.textContent = 'WebSocket Connected';
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          renderLogEntry(data);
+        } catch (e) {
+          console.error('Invalid WS frame', e);
+        }
+      };
+
+      ws.onclose = () => {
+        const badge = document.getElementById('wsStatus');
+        badge.className = 'badge';
+        badge.style.color = '#ff9900';
+        badge.textContent = 'Reconnecting...';
+        setTimeout(initWebSocket, 2500);
+      };
+    }
+
+    function renderLogEntry(data) {
+      const terminal = document.getElementById('eventTerminal');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+
+      if (data.event === 'FIREWALL_PROVISIONED' || data.event === 'PROVISIONING_FIREWALL') {
+        entry.classList.add('log-firewall');
+      } else if (data.risk_score === 'CRITICAL' || data.risk_score === 'HIGH') {
+        entry.classList.add('log-critical');
+      } else if (data.event === 'REVIEW_POSTED') {
+        entry.classList.add('log-success');
+      }
+
+      const timeStr = new Date().toLocaleTimeString();
+      entry.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="log-event">${data.event || 'EVENT'}</span>
+        ${escapeHtml(data.message || JSON.stringify(data))}
+      `;
+      terminal.appendChild(entry);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    const VULNERABLE_DIFF = `diff --git a/compose.yaml b/compose.yaml
+--- a/compose.yaml
++++ b/compose.yaml
+@@ -5,2 +5,4 @@ services:
+   agent:
++    ports:
++      - "0.0.0.0:22:22"
++    linode_id = 12345
+diff --git a/agent/brain.py b/agent/brain.py
++    system_prompt = f"System: {user_input}"`;
+
+    const CLEAN_DIFF = `diff --git a/agent/server.py b/agent/server.py
+--- a/agent/server.py
++++ b/agent/server.py
+@@ -34,3 +34,3 @@ class ChatRequest(BaseModel):
+-    message: str = Field(min_length=1)
++    message: str = Field(min_length=1, max_length=2000)`;
+
+    function loadVulnerablePR() {
+      document.getElementById('diffInput').value = VULNERABLE_DIFF;
+    }
+
+    function loadCleanPR() {
+      document.getElementById('diffInput').value = CLEAN_DIFF;
+    }
+
+    function clearDiff() {
+      document.getElementById('diffInput').value = '';
+      document.getElementById('auditResult').style.display = 'none';
+    }
+
+    async function runDirectAudit() {
+      const diff = document.getElementById('diffInput').value;
+      if (!diff.trim()) {
+        alert('Please enter a git diff to audit.');
+        return;
+      }
+
+      const btn = document.getElementById('btnAudit');
+      btn.disabled = true;
+      btn.textContent = 'Auditing...';
+
+      try {
+        const resp = await fetch('/api/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            diff: diff,
+            title: 'Manual PR Audit Simulation',
+            repo: 'akamai-developers/akamai-workshop-hackmidwest',
+            pr_number: Math.floor(Math.random() * 900) + 100,
+            linode_id: 12345
+          })
+        });
+
+        const data = await resp.json();
+        const audit = data.audit;
+        const analysis = audit.security_analysis;
+
+        // Update stats
+        auditsCount++;
+        document.getElementById('statAudits').textContent = auditsCount;
+        if (analysis.risk_score === 'CRITICAL' || analysis.risk_score === 'HIGH') {
+          threatsCount++;
+          document.getElementById('statThreats').textContent = threatsCount;
+        }
+        if (audit.firewall_action) {
+          firewallsCount++;
+          document.getElementById('statFirewalls').textContent = firewallsCount;
+        }
+
+        // Show result box
+        const resultBox = document.getElementById('auditResult');
+        resultBox.style.display = 'block';
+
+        const banner = document.getElementById('riskBanner');
+        banner.className = `risk-banner risk-${analysis.risk_score}`;
+        document.getElementById('riskScoreText').textContent = `RISK: ${analysis.risk_score}`;
+        document.getElementById('threatCountText').textContent = `${analysis.vulnerabilities.length} Finding(s)`;
+
+        document.getElementById('summaryText').textContent = analysis.summary;
+
+        // Render vulnerabilities
+        const vulnContainer = document.getElementById('vulnerabilitiesContainer');
+        if (analysis.vulnerabilities.length > 0) {
+          let html = '<div style="margin-bottom:6px; font-weight:600;">Detected Vulnerabilities:</div>';
+          analysis.vulnerabilities.forEach(v => {
+            html += `<div style="padding:6px 10px; background:rgba(0,0,0,0.3); border-radius:6px; margin-bottom:4px;">
+              <span style="color:var(--danger); font-weight:bold;">[${v.severity}]</span>
+              <strong>${v.type}</strong>: ${v.description}
+            </div>`;
+          });
+          vulnContainer.innerHTML = html;
+        } else {
+          vulnContainer.innerHTML = '<div style="color:var(--success)">✅ Clean PR. No security vulnerabilities detected.</div>';
+        }
+
+        // Firewall alert
+        const fwAlert = document.getElementById('firewallAlert');
+        if (audit.firewall_action) {
+          fwAlert.style.display = 'flex';
+          const fw = audit.firewall_action;
+          document.getElementById('firewallAlertDetails').textContent =
+            `Zero-Trust Cloud Firewall #${fw.id} provisioned on Linode ID ${audit.security_analysis.target_linode_id || 12345}. Inbound policy DROP, Port 443 TCP only.`;
+        } else {
+          fwAlert.style.display = 'none';
+        }
+
+        // Remediation diff
+        const remPre = document.getElementById('remediationDiff');
+        remPre.textContent = analysis.remediation_diff || '(No diff remediation required for this change)';
+
+      } catch (err) {
+        alert('Audit request failed: ' + err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Run Security Audit';
+      }
+    }
+
+    window.onload = initWebSocket;
+  </script>
+</body>
+</html>
